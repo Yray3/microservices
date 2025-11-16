@@ -34,8 +34,10 @@ class UserRegistrationSerializer(serializers.ModelSerializer):
             raise serializers.ValidationError('Passwords do not match')
         return attrs
 
-def create(self, validated_data):
-    validated_data.pop('password_confirm')
-    user = User.objects.create_user(**validated_data)
-    UserProfile.objects.create(user=user)
-    return user
+    def create(self, validated_data):
+        validated_data.pop('password_confirm')  # убираем поле password_confirm
+        password = validated_data.pop('password')  # забираем пароль
+        user = User(**validated_data)  # создаём пользователя без пароля
+        user.set_password(password)  # устанавливаем хэшированный пароль
+        user.save()
+        return user
